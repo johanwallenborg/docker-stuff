@@ -1,0 +1,6 @@
+server.name: kib01
+server.host: "0.0.0.0"
+#elasticsearch.hosts: https://es01:9200
+xpack.encryptedSavedObjects.encryptionKey: d6d13af42dbc2b8c94c2c8d84f498e4c
+xpack.reporting.encryptionKey: 4e71aee7f8786e2eff965dbc7ef326cc
+xpack.security.encryptionKey: e4b7521e17133104176a79dddf8ae2ff

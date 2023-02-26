@@ -1,0 +1,71 @@
+
+
+version: '2.2'
+
+services:
+  es01:
+    container_name: es01
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.17.9
+    environment:
+      - node.name=es01
+      - discovery.seed_hosts=es01
+      - cluster.initial_master_nodes=es01
+      - ELASTIC_PASSWORD=$ELASTIC_PASSWORD 
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+      - xpack.license.self_generated.type=trial 
+      - xpack.security.enabled=true
+      - xpack.security.http.ssl.enabled=true
+      - xpack.security.http.ssl.key=$CERTS_DIR/es01/es01.key
+      - xpack.security.http.ssl.certificate_authorities=$CERTS_DIR/ca/ca.crt
+      - xpack.security.http.ssl.certificate=$CERTS_DIR/es01/es01.crt
+      - xpack.security.transport.ssl.enabled=true
+      - xpack.security.transport.ssl.verification_mode=certificate 
+      - xpack.security.transport.ssl.certificate_authorities=$CERTS_DIR/ca/ca.crt
+      - xpack.security.transport.ssl.certificate=$CERTS_DIR/es01/es01.crt
+      - xpack.security.transport.ssl.key=$CERTS_DIR/es01/es01.key
+    volumes: ['data01:/usr/share/elasticsearch/data', 'certs:$CERTS_DIR']
+    ports:
+      - 9201:9200
+    # healthcheck:
+    #   test: curl --cacert $CERTS_DIR/ca/ca.crt -s https://localhost:9201 >/dev/null; if [[ $$? == 52 ]]; then echo 0; else echo 1; fi
+    #   interval: 30s
+    #   timeout: 10s
+    #   retries: 5
+    networks:
+      - elastic
+
+  kib01:
+      container_name: kib01
+      image: docker.elastic.co/kibana/kibana:7.17.9
+      volumes:
+        - certs:/certs:ro
+        - ./kibana.yml:/usr/share/kibana/config/kibana.yml
+      ports:
+        - 5601:5601
+      environment:
+        - ELASTICSEARCH_HOSTS=["https://es01:9200"]
+        - XPACK_SECURITY_ENABLED=true
+        - ELASTICSEARCH_USERNAME=elastic
+        - ELASTICSEARCH_PASSWORD=elastic
+        - ELASTICSEARCH_SSL_CERTIFICATEAUTHORITIES=/certs/ca/ca.crt
+        - ELASTICSEARCH_SSL_VERIFICATIONMODE=certificate
+        - SERVER_SSL_ENABLED=false
+        - SERVER_SSL_KEY=/certs/kib01/kib01.key
+        - SERVER_SSL_CERTIFICATE=/certs/kib01/kib01.crt
+        #- server.ssl.password=${KIBANA_CERT_PASSWORD}
+        #- xpack.monitoring.elasticsearch.ssl.verificationMode=certificate
+      networks:
+        - elastic
+      depends_on:
+        - es01
+
+
+  # wait_until_ready:
+  #   image: docker.elastic.co/elasticsearch/elasticsearch:7.17.9
+  #   command: /usr/bin/true
+  #   depends_on: {"es01": {"condition": "service_healthy"}}
+
+volumes: {"data01", "certs"}
+
+networks:
+  elastic:
