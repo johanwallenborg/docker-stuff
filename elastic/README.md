@@ -2,5 +2,6 @@
 
 ## Generate self-signed certifactes
 
-```docker-compose -f create-certs.yml run --rm create_certs´´´
-
+```
+docker-compose -f create-certs.yml run --rm create_certs
+```
