@@ -1,5 +1,3 @@
-# Good to know
-
 ## Generate self-signed certifactes
 
 ```
